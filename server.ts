@@ -36,9 +36,11 @@ import multer from 'multer';
 import path from 'path';
 import nodemailer from 'nodemailer';
 
-// Configure Nodemailer Transporter
+// Configure Nodemailer Transporter explicitly for cloud deployment (Render)
 const transporter = nodemailer.createTransport({
-  service: process.env.SMTP_SERVICE || 'gmail',
+  host: "smtp.gmail.com",
+  port: 465, // Use 465 for secure, 587 for TLS
+  secure: true, // true for 465, false for 587
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
