@@ -236,11 +236,11 @@ export default function DiscoveryScreen({ onNavigate, user, onLogout }: Discover
                               </div>
                               <div className="flex items-center gap-1 bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded font-bold">
                                 <Star className="w-3 h-3 fill-current" />
-                                <span>{teaching.teacherId?.rating || '4.8'}</span>
+                                <span>{(teaching.teacherId?.rating || 0).toFixed(1)}</span>
                               </div>
                               <div className="flex items-center gap-1 bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded font-bold">
                                 <ShieldCheck className="w-3 h-3" />
-                                <span>{teaching.teacherId?.reputationScore || '95'}%</span>
+                                <span>{teaching.teacherId?.reputationScore || 0}%</span>
                               </div>
                             </div>
 
