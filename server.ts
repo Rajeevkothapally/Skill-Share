@@ -34,18 +34,10 @@ import fs from 'fs';
 import bcrypt from 'bcryptjs';
 import multer from 'multer';
 import path from 'path';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-// Configure Nodemailer Transporter explicitly for cloud deployment (Render)
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465, // Use 465 for secure, 587 for TLS
-  secure: true, // true for 465, false for 587
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+// Configure Resend API Client
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Ensure uploads directory exists
 const uploadDir = path.join(process.cwd(), 'uploads');
@@ -144,10 +136,11 @@ async function startServer() {
       const verifyUrl = `${process.env.APP_URL || 'http://localhost:3000'}/api/verify?token=${verificationToken}`;
       
       try {
-        await transporter.sendMail({
-          from: `"SkillShare" <${process.env.SMTP_USER}>`,
+        console.log(`Sending verification email to ${email} via Resend...`);
+        const { data, error } = await resend.emails.send({
+          from: 'SkillShare <onboarding@resend.dev>', // Resend's default testing domain
           to: email,
-          subject: "Verify your SkillShare account",
+          subject: 'Verify your SkillShare Account',
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
               <h2 style="color: #059669;">Welcome to SkillShare, ${fullName}! 🎉</h2>
@@ -160,11 +153,16 @@ async function startServer() {
               <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;">
               <p style="color: #94a3b8; font-size: 12px; text-align: center;">If you didn't create an account, you can safely ignore this email.</p>
             </div>
-          `,
+          `
         });
-        console.log(`Verification email successfully sent to: ${email}`);
+
+        if (error) {
+          console.error('Failed to send verification email via Resend:', error);
+        } else {
+          console.log(`Verification email successfully sent to: ${email} (ID: ${data?.id})`);
+        }
       } catch (emailError) {
-        console.error("Failed to send verification email:", emailError);
+        console.error("Critical error sending verification email:", emailError);
       }
 
       res.status(201).json({ message: "Registration successful. Please check your email to verify your account." });
