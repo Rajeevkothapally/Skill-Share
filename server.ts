@@ -218,13 +218,8 @@ async function startServer() {
       }
 
       if (!user.verified) {
-        console.log("Login: User not verified, auto-verifying for dev environment:", email);
-        // Auto-verify for dev environment
-        if (user.verificationToken) {
-            await verifyUser(user.verificationToken);
-        }
-        user.verified = true; // Update local user object
-        // return res.status(403).json({ error: "Please verify your email address before logging in." });
+        console.log("Login failed: User not verified:", email);
+        return res.status(403).json({ error: "Please verify your email address before logging in. Check your inbox." });
       }
 
       // Log success
