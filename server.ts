@@ -556,13 +556,10 @@ async function startServer() {
 
       if (files?.demoVideo?.[0]) {
         const file = files.demoVideo[0];
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const filename = uniqueSuffix + '-' + file.originalname;
-        const filePath = path.join(uploadDir, filename);
-        
-        fs.writeFileSync(filePath, file.buffer);
-        demoVideoUrl = `/uploads/${filename}`;
-        console.log("[DEBUG] Demo video saved to disk:", filePath, "->", demoVideoUrl);
+        // Multer diskStorage already saved the file to the uploads/ directory
+        // and generated a unique filename available at file.filename
+        demoVideoUrl = `/uploads/${file.filename}`;
+        console.log("[DEBUG] Demo video saved by Multer:", demoVideoUrl);
       } else {
         console.log("[DEBUG] No demoVideo file found in req.files. Check field name in frontend.");
         return res.status(400).json({ error: "Demo video is required. Please ensure you selected a video file." });
@@ -570,13 +567,9 @@ async function startServer() {
 
       if (files?.certificate?.[0]) {
         const file = files.certificate[0];
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const filename = uniqueSuffix + '-' + file.originalname;
-        const filePath = path.join(uploadDir, filename);
-        
-        fs.writeFileSync(filePath, file.buffer);
-        certificateUrl = `/uploads/${filename}`;
-        console.log("[DEBUG] Certificate saved to disk:", filePath, "->", certificateUrl);
+        // Multer diskStorage already saved the file to the uploads/ directory
+        certificateUrl = `/uploads/${file.filename}`;
+        console.log("[DEBUG] Certificate saved by Multer:", certificateUrl);
       }
 
       if (!teacherId || !title) {
