@@ -34,10 +34,11 @@ import fs from 'fs';
 import bcrypt from 'bcryptjs';
 import multer from 'multer';
 import path from 'path';
-import { Resend } from 'resend';
+import * as brevo from '@getbrevo/brevo';
 
-// Configure Resend API Client
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Configure Brevo API Client
+const apiInstance = new brevo.TransactionalEmailsApi();
+apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY || '');
 
 // Ensure uploads directory exists
 const uploadDir = path.join(process.cwd(), 'uploads');
@@ -136,12 +137,11 @@ async function startServer() {
       const verifyUrl = `${process.env.APP_URL || 'http://localhost:3000'}/api/verify?token=${verificationToken}`;
       
       try {
-        console.log(`Sending verification email to ${email} via Resend...`);
-        const { data, error } = await resend.emails.send({
-          from: 'SkillShare <onboarding@resend.dev>', // Resend's default testing domain
-          to: email,
-          subject: 'Verify your SkillShare Account',
-          html: `
+        console.log(`Sending verification email to ${email} via Brevo...`);
+        const sendSmtpEmail = new brevo.SendSmtpEmail();
+        
+        sendSmtpEmail.subject = "Verify your SkillShare Account";
+        sendSmtpEmail.htmlContent = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
               <h2 style="color: #059669;">Welcome to SkillShare, ${fullName}! 🎉</h2>
               <p style="color: #334155; font-size: 16px;">We're excited to have you join our community. Please click the button below to verify your email address and activate your account:</p>
@@ -153,16 +153,15 @@ async function startServer() {
               <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;">
               <p style="color: #94a3b8; font-size: 12px; text-align: center;">If you didn't create an account, you can safely ignore this email.</p>
             </div>
-          `
-        });
+        `;
+        // Must use the exact verified email from Brevo dashboard
+        sendSmtpEmail.sender = { "name": "SkillShare", "email": process.env.BREVO_SENDER_EMAIL || "skillshare0726@gmail.com" }; 
+        sendSmtpEmail.to = [{ "email": email, "name": fullName }];
 
-        if (error) {
-          console.error('Failed to send verification email via Resend:', error);
-        } else {
-          console.log(`Verification email successfully sent to: ${email} (ID: ${data?.id})`);
-        }
+        const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
+        console.log(`Verification email successfully sent to: ${email} (Message ID: ${data.response?.headers?.['message-id'] || 'unknown'})`);
       } catch (emailError) {
-        console.error("Critical error sending verification email:", emailError);
+        console.error("Critical error sending verification email via Brevo:", emailError);
       }
 
       res.status(201).json({ message: "Registration successful. Please check your email to verify your account." });
