@@ -40,6 +40,9 @@ import * as brevo from '@getbrevo/brevo';
 const apiInstance = new brevo.TransactionalEmailsApi();
 apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY || '');
 
+// Define Port for Cloud Deployment
+const PORT = process.env.PORT || 3000;
+
 // Ensure uploads directory exists
 const uploadDir = path.join(process.cwd(), 'uploads');
 console.log(`[DEBUG] Uploads directory path: ${uploadDir}`);
