@@ -34,13 +34,19 @@ import fs from 'fs';
 import bcrypt from 'bcryptjs';
 import multer from 'multer';
 import path from 'path';
-import * as brevo from '@getbrevo/brevo';
+import nodemailer from 'nodemailer';
 
-// Configure Brevo API Client
-// @ts-expect-error: Brevo CJS types are incompatible with ESNext module resolution
-const apiInstance = new brevo.TransactionalEmailsApi();
-// @ts-expect-error
-apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY || '');
+// Configure Brevo SMTP Transporter
+// Brevo SMTP relay works on port 587 (not blocked by Render)
+const transporter = nodemailer.createTransport({
+  host: 'smtp-relay.brevo.com',
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.BREVO_SMTP_USER || '',  // Your Brevo account email
+    pass: process.env.BREVO_SMTP_KEY || '',   // Your Brevo SMTP Key (not account password)
+  },
+});
 
 // Define Port for Cloud Deployment
 const PORT: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
@@ -74,9 +80,8 @@ const upload = multer({
   }
 });
 
-async function startServer() {
+ async function startServer() {
   const app = express();
-  const PORT = process.env.PORT || 3000;
 
   // Connect to MongoDB
   try {
@@ -142,32 +147,28 @@ async function startServer() {
       const verifyUrl = `${process.env.APP_URL || 'http://localhost:3000'}/api/verify?token=${verificationToken}`;
       
       try {
-        console.log(`Sending verification email to ${email} via Brevo...`);
-        // @ts-expect-error: Brevo CJS types are incompatible with ESNext module resolution
-        const sendSmtpEmail = new brevo.SendSmtpEmail();
-        
-        sendSmtpEmail.subject = "Verify your SkillShare Account";
-        sendSmtpEmail.htmlContent = `
+        console.log(`Sending verification email to ${email} via Brevo SMTP...`);
+        await transporter.sendMail({
+          from: `"SkillShare" <${process.env.BREVO_SMTP_USER || 'skillshare0726@gmail.com'}>`  ,
+          to: email,
+          subject: 'Verify your SkillShare Account',
+          html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
               <h2 style="color: #059669;">Welcome to SkillShare, ${fullName}! 🎉</h2>
               <p style="color: #334155; font-size: 16px;">We're excited to have you join our community. Please click the button below to verify your email address and activate your account:</p>
               <div style="text-align: center; margin: 30px 0;">
                 <a href="${verifyUrl}" style="display: inline-block; padding: 12px 24px; background-color: #059669; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">Verify Account</a>
               </div>
-              <p style="color: #64748b; font-size: 14px;">If the button doesn't work, you can also copy and paste this link into your browser:</p>
+              <p style="color: #64748b; font-size: 14px;">If the button doesn't work, copy and paste this link:</p>
               <p style="color: #64748b; font-size: 14px; word-break: break-all;"><a href="${verifyUrl}" style="color: #059669;">${verifyUrl}</a></p>
               <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;">
               <p style="color: #94a3b8; font-size: 12px; text-align: center;">If you didn't create an account, you can safely ignore this email.</p>
             </div>
-        `;
-        // Must use the exact verified email from Brevo dashboard
-        sendSmtpEmail.sender = { "name": "SkillShare", "email": process.env.BREVO_SENDER_EMAIL || "skillshare0726@gmail.com" }; 
-        sendSmtpEmail.to = [{ "email": email, "name": fullName }];
-
-        const data = await apiInstance.sendTransacEmail(sendSmtpEmail);
-        console.log(`Verification email successfully sent to: ${email} (Message ID: ${data.response?.headers?.['message-id'] || 'unknown'})`);
+          `
+        });
+        console.log(`Verification email successfully sent to: ${email}`);
       } catch (emailError) {
-        console.error("Critical error sending verification email via Brevo:", emailError);
+        console.error("Error sending verification email via Brevo SMTP:", emailError);
       }
 
       res.status(201).json({ message: "Registration successful. Please check your email to verify your account." });
