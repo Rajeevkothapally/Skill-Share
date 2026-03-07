@@ -94,7 +94,7 @@ export default function ProfileModal({ user, onClose, onLogout, onUpdateUser }: 
             <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex flex-col items-center justify-center text-center col-span-2 sm:col-span-1">
               <div className="flex items-center gap-1 text-blue-500 mb-1">
                 <Award className="w-5 h-5" />
-                <span className="font-bold text-xl text-blue-600">{user.certificates?.length || 2}</span>
+                <span className="font-bold text-xl text-blue-600">{user.certificates?.length ?? 0}</span>
               </div>
               <span className="text-xs font-bold text-blue-700/70 uppercase tracking-wider">Certificates</span>
             </div>

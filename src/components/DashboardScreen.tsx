@@ -150,7 +150,7 @@ export default function DashboardScreen({ onNavigate, user, onLogout, onUpdateUs
         imageUrl: 'https://randomuser.me/api/portraits/lego/1.jpg',
         rating: 0,
         reputationScore: 0,
-        certificates: ['Frontend Development Fundamentals', 'Advanced UI/UX Patterns'],
+        certificates: [],
         skillsToTeach,
         skillsToLearn,
         verified: true
