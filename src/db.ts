@@ -113,7 +113,7 @@ export const createUser = async (email: string, password: string, fullName: stri
     skillsToTeach,
     skillsToLearn,
     verificationToken,
-    verified: false, // Enforce email verification for production
+    verified: true, // Auto-verify: email verification disabled
     headline: 'New Member',
     location: 'Remote',
     imageUrl: `https://randomuser.me/api/portraits/lego/${Math.floor(Math.random() * 9) + 1}.jpg`,

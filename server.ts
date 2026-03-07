@@ -223,11 +223,7 @@ const upload = multer({
         return res.status(401).json({ error: "Incorrect email or password." });
       }
 
-      if (!user.verified) {
-        console.log("Login failed: User not verified:", email);
-        return res.status(403).json({ error: "Please verify your email address before logging in. Check your inbox." });
-      }
-
+      // Successfully authenticated
       // Log success
       await new LoginLog({
         userId: user.id,
