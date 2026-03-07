@@ -22,24 +22,11 @@ export default function MeetSchedulerModal({ teaching, learner, teacher, onClose
   
   const [date, setDate] = useState(defaultDate);
   const [time, setTime] = useState('10:00');
-  const [duration, setDuration] = useState('60');
+  const [duration, setDuration] = useState('1 hour');
   const [message, setMessage] = useState(`Hi ${learner.fullName.split(' ')[0]}, let's meet to discuss ${teaching.title}!`);
   const [scheduled, setScheduled] = useState(false);
   const [saving, setSaving] = useState(false);
   const [meetLink, setMeetLink] = useState('');
-
-  const timeSlots = [
-    '08:00', '09:00', '10:00', '11:00', '12:00',
-    '13:00', '14:00', '15:00', '16:00', '17:00',
-    '18:00', '19:00', '20:00'
-  ];
-
-  const durationOptions = [
-    { value: '30', label: '30 minutes' },
-    { value: '60', label: '1 hour' },
-    { value: '90', label: '1.5 hours' },
-    { value: '120', label: '2 hours' },
-  ];
 
   const handleSchedule = async () => {
     setSaving(true);
@@ -145,41 +132,24 @@ export default function MeetSchedulerModal({ teaching, learner, teacher, onClose
                 <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
                   <Clock className="w-4 h-4 text-indigo-500" /> Time
                 </label>
-                <div className="grid grid-cols-4 gap-2">
-                  {timeSlots.map(slot => (
-                    <button
-                      key={slot}
-                      onClick={() => setTime(slot)}
-                      className={`py-2 text-xs font-bold rounded-lg transition-all ${
-                        time === slot
-                          ? 'bg-indigo-600 text-white shadow-sm'
-                          : 'bg-slate-50 text-slate-600 border border-slate-200 hover:border-indigo-300 hover:text-indigo-600'
-                      }`}
-                    >
-                      {slot}
-                    </button>
-                  ))}
-                </div>
+                <input
+                  type="time"
+                  value={time}
+                  onChange={e => setTime(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
+                />
               </div>
 
               {/* Duration */}
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Duration</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {durationOptions.map(opt => (
-                    <button
-                      key={opt.value}
-                      onClick={() => setDuration(opt.value)}
-                      className={`py-2.5 text-sm font-bold rounded-xl transition-all ${
-                        duration === opt.value
-                          ? 'bg-indigo-600 text-white shadow-sm'
-                          : 'bg-slate-50 text-slate-600 border border-slate-200 hover:border-indigo-300 hover:text-indigo-600'
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
+                <input
+                  type="text"
+                  value={duration}
+                  onChange={e => setDuration(e.target.value)}
+                  placeholder="e.g. 1 hour, 45 mins, 2 hours..."
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
+                />
               </div>
 
               {/* Note */}
@@ -213,7 +183,7 @@ export default function MeetSchedulerModal({ teaching, learner, teacher, onClose
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-1">Meeting Scheduled!</h3>
               <p className="text-slate-500 text-sm mb-6">
-                {formatDisplayDate(date)} at {time} · {durationOptions.find(d => d.value === duration)?.label}
+                {formatDisplayDate(date)} at {time} · {duration}
               </p>
 
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-5 text-left">
