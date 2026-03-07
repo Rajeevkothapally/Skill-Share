@@ -37,11 +37,13 @@ import path from 'path';
 import * as brevo from '@getbrevo/brevo';
 
 // Configure Brevo API Client
+// @ts-expect-error: Brevo CJS types are incompatible with ESNext module resolution
 const apiInstance = new brevo.TransactionalEmailsApi();
+// @ts-expect-error
 apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY || '');
 
 // Define Port for Cloud Deployment
-const PORT = process.env.PORT || 3000;
+const PORT: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 // Ensure uploads directory exists
 const uploadDir = path.join(process.cwd(), 'uploads');
@@ -141,6 +143,7 @@ async function startServer() {
       
       try {
         console.log(`Sending verification email to ${email} via Brevo...`);
+        // @ts-expect-error: Brevo CJS types are incompatible with ESNext module resolution
         const sendSmtpEmail = new brevo.SendSmtpEmail();
         
         sendSmtpEmail.subject = "Verify your SkillShare Account";
@@ -637,7 +640,7 @@ async function startServer() {
     });
   }
 
-  const server = app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(Number(PORT), "0.0.0.0", () => {
     fs.writeFileSync('server_listening.txt', `listening at ${new Date().toISOString()}`);
     console.log(`Server running on http://localhost:${PORT}`);
   });
